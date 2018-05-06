@@ -1,0 +1,528 @@
+<!DOCTYPE html> 
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Aborea Rechner</title>
+    <link rel="stylesheet" type="text/css" href="aboreaassistant.css" media="screen"/>
+    <link rel="stylesheet" href="http://icono-49d6.kxcdn.com/icono.min.css"/>
+    <script language="javascript"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>  
+
+
+</head>
+<body id="calculator" onload="init()">
+
+    <div id="navigation">
+        <a href="home.html">
+            <div id="nav1" class="button">
+            <h1>HOME</h1>
+            </div>
+        </a>
+    
+        <a href="howto.html">
+            <div id="nav2" class="button">
+            <h1>HOW TO</h1>
+            </div>
+        </a>
+    
+        <a href="impressum.html">
+            <div id="nav3" class="button">
+            <h1>IMPRESSUM</h1>
+            </div>
+        </a> 
+    </div>
+    
+    
+    <div class="calculatorconent">
+        <h3>Calculator</h3>
+        <button class="gettheturn" onclick="getturn()">Reihenfolge ausrechnen</button>
+        <button class="dmgbutton" onclick="calculatedmg(document.myForm.attacker,document.myForm.defender)">Schaden berechnen</button>
+        <input type="password" id="grouppw" size="25" placeholder="Gruppenpasswort eingeben"/>
+        <button class="grouppassword" onclick="checkgrouppw()">Login</button>
+        <input type="button" id="HowToFight" onclick="swal({className: 'schemata',button:{text:'Schließen'}, dangerMode: true,})" value="Wie ging das Kämpfen nochmal?"/><br/><br/><br/>
+        <form name="myForm" onSubmit="return false;">
+
+        </form>
+        
+            <button id="playeradd" onclick="addplayers()">Spieler hinzufügen</button><br/>
+    </div>
+    <script language="JavaScript">
+        var playername = new Array();
+        var tp = new Array();
+        var turn = new Array();
+        var insert = new Array();
+        var kb = new Array();
+        var ob = new Array();
+        var db = new Array();
+        var armor = new Array();
+        var weapondmg = new Array();
+        var anzP = 0;
+        var angreifer;
+        var verteidiger;
+        var lastcheckedatck = ".";
+        var lastcheckeddfnd = ".";
+        var imgyesno = 0
+
+        function init(){
+            for (x = 1; x<=5; x++){
+                addplayers();
+            }
+        }
+
+
+        function addplayers(){
+            anzP = anzP+1;
+            //atck
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "radio" );
+            newinput.setAttribute("id", "atckP"+anzP );
+            newinput.setAttribute("name", "attacker" );
+            newinput.setAttribute("onchange", "changecoloratck(document.myForm.attacker)" );
+            document.myForm.appendChild( newinput);
+            //dfnd
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "radio" );
+            newinput.setAttribute("id", "dfndP"+anzP );
+            newinput.setAttribute("name", "defender" );
+            newinput.setAttribute("onchange", "changecolordfnd(document.myForm.defender)" );
+            document.myForm.appendChild( newinput);
+            //Name
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "text" );
+            newinput.setAttribute("class", "popupcaption" );
+            newinput.setAttribute("id", "P"+anzP  );
+             newinput.setAttribute("size", "7" );
+            newinput.required = true;
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "P"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("Name"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel);
+            document.myForm.appendChild( newspan);
+            //TP
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "text" );
+            newinput.setAttribute("class", "popupcaption" );
+            newinput.setAttribute("id", "tpP"+anzP  );
+            newinput.setAttribute("size", "1" );
+            newinput.required = true;
+            document.myForm.appendChild( newinput);
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "tpP"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("TP"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel);
+            document.myForm.appendChild( newspan);
+            //Ini
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "number" );
+            newinput.setAttribute("class", "popupcaption inputhelp" );
+            newinput.setAttribute("id", "iniP"+anzP  );
+            newinput.setAttribute("min", "0" );
+            newinput.required = true;
+            document.myForm.appendChild( newinput);
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "iniP"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("Ini"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            newspan.setAttribute("class", "helpclass"  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel) ;
+            document.myForm.appendChild( newspan);
+            //IniHelp
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP );
+            newspan.setAttribute("class", "spanhelp"  );
+            newspan.setAttribute("onclick", "swal('Der Ini-Wert berechnet sich aus der Summe vom Geschicklichkeitsbonus und dem Ini-Wert der gezogenen Waffe!', ' ', 'info')" );
+            newspan.appendChild(document.createTextNode("?"));
+            document.myForm.appendChild( newspan);
+            //toss1
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "number" );
+            newinput.setAttribute("class", "popupcaption" );
+            newinput.setAttribute("id", "1tossP"+anzP  );
+            newinput.setAttribute("min", "0" );
+            newinput.setAttribute("max", "9" );
+            newinput.required = true;
+            document.myForm.appendChild( newinput);
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "1tossP"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("1.Stechen"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel);
+            document.myForm.appendChild( newspan);
+            //toss2
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "number" );
+            newinput.setAttribute("class", "popupcaption" );
+            newinput.setAttribute("id", "2tossP"+anzP  );
+            newinput.setAttribute("min", "0" );
+            newinput.setAttribute("max", "9" );
+            newinput.required = true;
+            document.myForm.appendChild( newinput);
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "2tossP"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("2.Stechen"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel);
+            document.myForm.appendChild( newspan);
+            //toss3
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "number" );
+            newinput.setAttribute("class", "popupcaption" );
+            newinput.setAttribute("id", "3tossP"+anzP  );
+            newinput.setAttribute("min", "0" );
+            newinput.setAttribute("max", "9" );
+            newinput.required = true;
+            document.myForm.appendChild( newinput);
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "3tossP"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("3.Stechen"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel);
+            document.myForm.appendChild( newspan);
+            //kb
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "text" );
+            newinput.setAttribute("class", "popupcaption inputhelp" );
+            newinput.setAttribute("id", "kbP"+anzP  );
+             newinput.setAttribute("size", "7" );
+            newinput.required = true;
+            document.myForm.appendChild( newinput);
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "kbP"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("Kampfbounus"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            newspan.setAttribute("class", "helpclass"  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel);
+            document.myForm.appendChild( newspan);
+            //kbHelp
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP );
+            newspan.setAttribute("class", "spanhelp"  );
+            newspan.setAttribute("onclick", "swal('Der KB-Wert errechnet sich aus der Summe des Attributsbonus der Waffe (ST oder GE), dem Waffen-Fertigkeitenrang (und Magie)', 'Bei Gezielten Sprüchen berechnet sich der KB-Wert bei Zauberern aus dem INT-Bonus und dem Rang von Gezielte Sprüche und bei Priestern aus dem CH-Bonus und dem Rang von Gezielte Sprüche und kann nur offensiv eingesetzt werden!', 'info')");
+            newspan.appendChild(document.createTextNode("?"));
+            document.myForm.appendChild( newspan);
+            //ob
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "text" );
+            newinput.setAttribute("class", "popupcaption" );
+            newinput.setAttribute("id", "obP"+anzP  );
+             newinput.setAttribute("size", "7" );
+            newinput.required = true;
+            document.myForm.appendChild( newinput);
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "obP"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("Offensivbonus"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel);
+            document.myForm.appendChild( newspan);
+            //db
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "text" );
+            newinput.setAttribute("class", "popupcaption inputhelp" );
+            newinput.setAttribute("id", "dbP"+anzP  );
+             newinput.setAttribute("size", "7" );
+            newinput.required = true;
+            document.myForm.appendChild( newinput);
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "dbP"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("Defensivbonus"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            newspan.setAttribute("class", "helpclass"  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel);
+            document.myForm.appendChild( newspan);
+            //dbHelp
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP );
+            newspan.setAttribute("class", "spanhelp"  );
+            newspan.setAttribute("onclick", "swal('Hier ggf. Magieresistenz draufrechnen, wenn sich der Spieler/das Monster gerade gegen einen Zauber verteidigt!', ' ', 'info')");
+            newspan.appendChild(document.createTextNode("?"));
+            document.myForm.appendChild( newspan);
+            //armor
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "text" );
+            newinput.setAttribute("class", "popupcaption" );
+            newinput.setAttribute("id", "armorP"+anzP  );
+             newinput.setAttribute("size", "7" );
+            newinput.required = true;
+            document.myForm.appendChild( newinput);
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "armorP"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("Rüstung"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel);
+            document.myForm.appendChild( newspan);
+            //weapondmg
+            var newinput = document.createElement("input");
+            newinput.setAttribute("type", "text" );
+            newinput.setAttribute("class", "popupcaption" );
+            newinput.setAttribute("id", "weapondmgP"+anzP  );
+             newinput.setAttribute("size", "7" );
+            newinput.required = true;
+            document.myForm.appendChild( newinput);
+            var newlabel = document.createElement("label");
+            newlabel.setAttribute("for", "weapondmgP"+anzP );
+            newlabel.setAttribute("id", "labelP"+anzP );
+            newlabel.appendChild(document.createTextNode("Waffenschaden"));
+            var newspan = document.createElement("span");
+            newspan.setAttribute("id", "spanP"+anzP  );
+            var newTextnode = newspan.appendChild(newinput) + newspan.appendChild(newlabel);
+            document.myForm.appendChild( newspan);
+            //removecross
+            var newinput = document.createElement("div");
+            newinput.setAttribute("id", "removeP"+anzP );
+            newinput.setAttribute("class", "icono-cross" );
+            newinput.setAttribute("onclick", "removeplayer("+anzP+")");
+            document.myForm.appendChild( newinput);
+            //Absatz
+            var newinput = document.createElement("br");
+            newinput.setAttribute("id", "brP"+anzP );
+            document.myForm.appendChild( newinput);
+        }
+
+
+        function removeElement(elementId) {
+            var element = document.getElementById(elementId);
+            element.parentNode.removeChild(element);
+        }
+
+        function checkgrouppw() {
+            password = document.getElementById("grouppw").value;
+            switch(password){
+                case "Holzfäller":
+                document.getElementById("P1").value = "Julian";
+                document.getElementById("P2").value = "Chrissi";
+                document.getElementById("P3").value = "Jeremy";
+                document.getElementById("P4").value = "Jan-Luca";
+                document.getElementById("P5").value = "Paulin";
+                swal("Yeeeah", "Richtiges Passwort!", "success");
+                break;
+                default: 
+                swal("Vertippt?", "Falsches Passwort!", "error");
+                break;
+            }
+            
+        }
+
+        function changecoloratck(atck) {
+            for (var i = 0; i < atck.length; i++) if (atck[i].checked) { 
+                tempindex = i;
+                document.myForm.defender[i].disabled = true;
+            }
+            document.getElementById("P"+(tempindex+1)).style.background = '#40e04d';
+            document.getElementById("labelP"+(tempindex+1)).style.background = '#30c23c';
+            document.getElementById("P"+(tempindex+1)).style.borderColor = '#30c23c';
+            if (lastcheckedatck != ".") {
+                document.getElementById("P"+(lastcheckedatck+1)).style.background = 'white';
+                document.getElementById("labelP"+(lastcheckedatck+1)).style.background = '#95d0ee ';
+                document.getElementById("P"+(lastcheckedatck+1)).style.borderColor = '#95d0ee ';
+                document.myForm.defender[lastcheckedatck].disabled = false;
+            }
+            lastcheckedatck = tempindex;
+        }
+
+        function changecolordfnd(dfnd) {
+            for (var i = 0; i < dfnd.length; i++) if (dfnd[i].checked){
+                 tempindex2 = i;
+                 document.myForm.attacker[i].disabled = true;
+            }
+            document.getElementById("P"+(tempindex2+1)).style.background = '#ee0000';
+            document.getElementById("labelP"+(tempindex2+1)).style.background = '#dd0000';
+            document.getElementById("P"+(tempindex2+1)).style.borderColor= '#dd0000';
+            if (lastcheckeddfnd != ".") {
+                document.getElementById("P"+(lastcheckeddfnd+1)).style.background = 'white';
+                document.getElementById("labelP"+(lastcheckeddfnd+1)).style.background = '#95d0ee ';
+                document.getElementById("P"+(lastcheckeddfnd+1)).style.borderColor= '#95d0ee ';
+                document.myForm.attacker[lastcheckeddfnd].disabled = false;
+            }
+            lastcheckeddfnd = tempindex2;
+        }
+        
+        function getturn() { 
+            playername = [];
+            turn = [];
+            insert = [];
+            for (var x = 0; x< anzP; x++) {
+                playername[x] = document.getElementById("iniP"+(x+1)).value;
+                insert[x] = document.getElementById("iniP"+(x+1)).value;
+            }
+            
+            for (var x = 0; x < anzP; x++){
+                for ( var y = x+1; y < anzP; y++) {
+                    for (var z = 0; z < anzP;z++){
+                        playername[z] = document.getElementById("iniP"+(z+1)).value + document.getElementById("1tossP"+(z+1)).value + document.getElementById("2tossP"+(z+1)).value + document.getElementById("3tossP"+(z+1)).value;
+
+                        if (playername[z].length <= 3) {
+                        swal("Moment mal", "Erst müssen alle Spieler einen Ini-Wert haben!", "error");
+                        return;
+                    }
+                    }
+
+                    if (playername[x] == playername[y]){
+                        swal("Achtung!", "Bei gleicher Würfelzahl bitte noch einmal würfeln!", "warning");
+                        return; 
+                    }
+                    if (((document.getElementById("3tossP"+(x+1)).value  == document.getElementById("3tossP"+(y+1)).value) && ((document.getElementById("3tossP"+(x+1)).value > 0) && (document.getElementById("3tossP"+(y+1)).value > 0)) ) ){
+                        swal("Ohjeee...", "Die Maximale Anzahl an Stechen ist überschritten!! Bitte machen Sie manuell weiter!", "error");
+                        return;
+                    }
+                }
+
+                insert[x] = playername[x];
+            }
+                
+
+                insert.sort(function(a, b){return b-a});
+
+          
+          for (var z = 0; z < anzP; z++){
+                for (var z2 = 0; z2 < anzP; z2++)
+                    if (insert[z] == playername[z2]) {
+                        a = document.getElementById("P"+(z2+1)).value;
+                        b = document.getElementById("tpP"+(z2+1)).value;
+                        c = document.getElementById("iniP"+(z2+1)).value;
+                        d = document.getElementById("1tossP"+(z2+1)).value;
+                        e = document.getElementById("2tossP"+(z2+1)).value;
+                        f = document.getElementById("3tossP"+(z2+1)).value;
+                        g = document.getElementById("kbP"+(z2+1)).value;
+                        h = document.getElementById("obP"+(z2+1)).value;
+                        i = document.getElementById("dbP"+(z2+1)).value;
+                        j = document.getElementById("armorP"+(z2+1)).value;
+                        k = document.getElementById("weapondmgP"+(z2+1)).value;
+                        turn[z] = [a, b ,c, d,e ,f ,g ,h ,i , j, k];
+
+                    }
+
+            }
+
+            for ( var x=0; x < anzP; x++){
+                document.getElementById("P"+(x+1)).value = turn[x][0];
+                document.getElementById("tpP"+(x+1)).value = turn[x][1];
+                document.getElementById("iniP"+(x+1)).value = turn[x][2];
+                document.getElementById("1tossP"+(x+1)).value = turn[x][3];
+                document.getElementById("2tossP"+(x+1)).value = turn[x][4];
+                document.getElementById("3tossP"+(x+1)).value = turn[x][5];
+                document.getElementById("kbP"+(x+1)).value = turn[x][6];
+                document.getElementById("obP"+(x+1)).value = turn[x][7];
+                document.getElementById("dbP"+(x+1)).value = turn[x][8];
+                document.getElementById("armorP"+(x+1)).value = turn[x][9];
+                document.getElementById("weapondmgP"+(x+1)).value = turn[x][10];
+
+            }
+        }
+
+          function removeplayer(playerid){
+            
+            removeElement("atckP" + playerid);
+            removeElement("dfndP" + playerid);
+            removeElement("P"+playerid);
+            removeElement("tpP"+playerid);
+            removeElement("iniP"+playerid);
+            removeElement("1tossP"+playerid);
+            removeElement("2tossP"+playerid);
+            removeElement("3tossP"+playerid);
+            removeElement("kbP"+playerid);
+            removeElement("obP"+playerid);
+            removeElement("dbP"+playerid);
+            removeElement("armorP"+playerid);
+            removeElement("weapondmgP"+playerid);
+            removeElement("removeP"+playerid);
+            removeElement("brP"+playerid);
+            for (x=0; x<=13; x++){
+                removeElement("spanP"+playerid);
+            }
+            anzP = anzP-1;
+        }
+        function calculatedmg(atck,dfnd) {
+
+            for (var obz = 0; obz < anzP; obz++){
+                tempid = "obP" + parseFloat(obz + 1);
+                ob[obz] = document.getElementById(tempid).value;
+            }
+            for (var dbz = 0; dbz < anzP; dbz++){
+                tempid = "dbP" + parseFloat(dbz + 1);
+                db[dbz] = document.getElementById(tempid).value;
+            }
+            for (var armorz = 0; armorz < anzP; armorz++){
+                tempid = "armorP" + parseFloat(armorz + 1);
+                armor[armorz] = document.getElementById(tempid).value;
+            }
+            for (var weapondmgz = 0; weapondmgz < anzP; weapondmgz++){
+                tempid = "weapondmgP" + parseFloat(weapondmgz + 1);
+                weapondmg[weapondmgz] = document.getElementById(tempid).value;
+            }
+            for (var playernamez = 0; playernamez < anzP; playernamez++){
+                tempid = "P" + parseFloat(playernamez + 1);
+                playername[playernamez] = document.getElementById(tempid).value;
+            }
+
+            for (var i = 0; i < atck.length; i++) if (atck[i].checked) angreifer = parseInt(i);
+            for (var i = 0; i < dfnd.length; i++) if (dfnd[i].checked) verteidiger = parseInt(i);
+
+            var dmg = 0;
+            var dice = 0;
+            var attackername = document.getElementById("P"+(angreifer+1)).value;
+            var defendername = document.getElementById("P"+(verteidiger+1)).value;
+            swal({
+                title: "Schaden berechnen",
+                text: "Bitte die gewürfelte Zahl eingeben! Ggf. von der gewürfelten Zahl den Reichweitenmalus abziehen!",
+                content: "input",
+                buttons: {
+                    cancel: "Abbruch",
+                    confirm: "Eingabe"
+                }
+            }).then(val => {
+                if(val) {
+                    dice = parseInt(val);
+                    if ((parseInt(dice) + parseInt(ob[angreifer])) > (parseInt(armor[verteidiger]) + parseInt(db[verteidiger]))) {
+                        if (parseInt(dice) >= 10) {
+                            dmg = (parseInt(dice) + parseInt(ob[angreifer]) + parseInt(weapondmg[angreifer]) + parseInt(weapondmg[angreifer])) - (parseInt(armor[verteidiger]) + parseInt(db[verteidiger]));
+                        } else {
+                            dmg = (parseInt(dice) + parseInt(ob[angreifer]) + parseInt(weapondmg[angreifer])) - (parseInt(armor[verteidiger]) + parseInt(db[verteidiger]));
+                        }
+                        document.getElementById("tpP"+ (verteidiger+1)).value = (parseInt(document.getElementById("tpP"+ (verteidiger+1)).value) - parseInt(dmg));
+                        if (document.getElementById("tpP"+ (verteidiger+1)).value <= 0) {
+                            document.getElementById("tpP"+ (verteidiger+1)).value = 0;
+
+                            document.getElementById("iniP"+(verteidiger+1)).value = -5;
+                            getturn();
+                            removeplayer(anzP);
+                            getturn();
+                            swal("BÄÄÄM!", "Der Spieler/das Monster " + defendername + " wurde von " + attackername + " mit " + parseFloat(dmg) + " Schaden erfolgreich hingerichtet! R.I.P" + defendername, "success"); 
+                            return;
+                        }
+                        swal("Treffer!", "Der Angreifer " + attackername + " hat " + parseFloat(dmg) + " Schaden an " + defendername + " gemacht!", "success");
+                        return;
+                    } else {
+                        swal("Not strong enough...", "Der Angreifer " + attackername + " hat KEINEN Schaden an " + defendername + " gemacht!", "error");
+                        return;
+                    }
+                }
+            });
+
+        }
+
+    </script>
+
+</body>
+</html>
